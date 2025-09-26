@@ -8,6 +8,8 @@ const performanceBtn = document.querySelector('#performance-btn');
 const totalPriceElemnt = document.querySelector('#total-price');
 const fullSelfDrivingCheckbox = document.querySelector('#full-self-driving-checkbox');
 const accessoryCheckboxes = document.querySelectorAll('.accessory-form-checkbox');
+const downPaymentElement = document.querySelector('#down-payment');
+const monthlyPaymentElement = document.querySelector('#monthly-payment');
 
 const basePrice = 52490;
 let currentPrice = basePrice;
@@ -68,6 +70,28 @@ let currentPrice = basePrice;
 
         // Update total price in the UI
         totalPriceElemnt.textContent = `$${currentPrice.toLocaleString()}`;
+
+        updatePaymentBreakdown();
+    }
+
+// Update payment breakdown based on the current price
+    const updatePaymentBreakdown = () => {
+        // Calculate downpayment
+        const downPayment = currentPrice * 0.1;
+        downPaymentElement.textContent = `$${downPayment.toLocaleString()}`;
+
+        // Calculate Loan Details (assuming 60 months loan and 3% interest rate)
+        const loanTermMonths = 60;
+        const interestRate = 0.03;
+
+        const loanAmount = currentPrice - downPayment;
+
+        // Monthly payment formula: P * (r (1+r)^n) / ((1+r)^n - 1);
+
+        const monthlyInterestRate = interestRate / 12;
+        const monthlyPayment = (loanAmount * (monthlyInterestRate * Math.pow( 1 + monthlyInterestRate, loanTermMonths))) / (Math.pow(1 + monthlyInterestRate, loanTermMonths) - 1);
+
+        monthlyPaymentElement.textContent = `$${monthlyPayment.toFixed(2).toLocaleString()}`;
     }
 
 // Handle top bar on scroll
@@ -167,6 +191,9 @@ let currentPrice = basePrice;
     accessoryCheckboxes.forEach((checkbox) => {
         checkbox.addEventListener('change', () => updateTotalPrice());
     });
+
+// Initial Update Total Price
+    updateTotalPrice();
 
 // Event Listeners
 window.addEventListener('scroll', () => requestAnimationFrame(handleScroll));
