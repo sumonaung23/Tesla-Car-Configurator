@@ -3,59 +3,175 @@ const exteriorColorSection = document.querySelector('#exterior-buttons');
 const interiorColorSection = document.querySelector('#interior-buttons');
 const exteriorImage = document.querySelector('#exterior-image');
 const interiorImage = document.querySelector('#interior-image');
+const wheelButtonSelection = document.querySelector('#wheel-buttons');
+const performanceBtn = document.querySelector('#performance-btn');
+const totalPriceElemnt = document.querySelector('#total-price');
+const fullSelfDrivingCheckbox = document.querySelector('#full-self-driving-checkbox');
+const accessoryCheckboxes = document.querySelectorAll('.accessory-form-checkbox');
+
+const basePrice = 52490;
+let currentPrice = basePrice;
+
+    let selectedColor = 'Stealth-grey';
+    const selectedOptions = {
+        'Performance Wheels' : false,
+        'Performance Package' : false,
+        'Full Self-Driving' : false
+    }
+
+    let pricing = {
+        'Performance Wheels' : 2500,
+        'Performance Package' : 5000,
+        'Full Self-Driving' : 8500,
+        'Accessories' : {
+            'Center Console Trays' : 35,
+            'Sunshade' : 105,
+            'All-Weather Interior Liners' : 225
+        }
+    }
+
+// Update total price in the UI
+    const updateTotalPrice = () => {
+        // Reset the current price to the base price
+        currentPrice = basePrice;
+
+        // Performance Wheel Option
+        if (selectedOptions['Performance Wheels']) {
+            currentPrice += pricing['Performance Wheels'];
+        }
+
+        // Performance Package Option
+        if (selectedOptions['Performance Package']) {
+            currentPrice += pricing['Performance Package'];
+        }
+
+        // Full Self-driving Option
+        if (selectedOptions['Full Self-Driving']) {
+            currentPrice += pricing['Full Self-Driving'];
+        }
+
+        // Accessory checkboxes
+        accessoryCheckboxes.forEach((checkbox) => {
+            // Extract the accessory label
+            const accessoryLabel = checkbox
+                .closest('label')
+                .querySelector('span')
+                .textContent.trim();
+
+            const accessoryPrice = pricing['Accessories'][accessoryLabel];
+
+            // Add to current price if accessory is selected
+            if (checkbox.checked) {
+                currentPrice += accessoryPrice;
+            }
+        });
+
+        // Update total price in the UI
+        totalPriceElemnt.textContent = `$${currentPrice.toLocaleString()}`;
+    }
 
 // Handle top bar on scroll
-const handleScroll = () => {
-    const atTop = window.scrollY === 0;
-    topBar.classList.toggle('visible-bar', atTop);
-    topBar.classList.toggle('hidden-bar', !atTop);
-}
+    const handleScroll = () => {
+        const atTop = window.scrollY === 0;
+        topBar.classList.toggle('visible-bar', atTop);
+        topBar.classList.toggle('hidden-bar', !atTop);
+    }
 
 // Image Mapping
-const exteriorImages = {
-    'Stealth-grey' : '/images/model-y-stealth-grey.jpg',
-    'Pearl-white' : '/images/model-y-pearl-white.jpg',
-    'Deep-blue' : '/images/model-y-deep-blue-metallic.jpg',
-    'Solid-black' : '/images/model-y-solid-black.jpg',
-    'Ultra-red' : '/images/model-y-ultra-red.jpg',
-    'Quicksilver' : '/images/model-y-quicksilver.jpg'
-}
+    const exteriorImages = {
+        'Stealth-grey' : '/images/model-y-stealth-grey.jpg',
+        'Pearl-white' : '/images/model-y-pearl-white.jpg',
+        'Deep-blue' : '/images/model-y-deep-blue-metallic.jpg',
+        'Solid-black' : '/images/model-y-solid-black.jpg',
+        'Ultra-red' : '/images/model-y-ultra-red.jpg',
+        'Quicksilver' : '/images/model-y-quicksilver.jpg'
+    }
 
-const interiorImages = {
-    'Dark' : '/images/model-y-interior-dark.jpg',
-    'Light' : '/images/model-y-interior-light.jpg'
-}
+    const interiorImages = {
+        'Dark' : '/images/model-y-interior-dark.jpg',
+        'Light' : '/images/model-y-interior-light.jpg'
+    }
 
 // Handle Color Selection
-const handleColorButtonClick = (e) => {
-    let button;
+    const handleColorButtonClick = (e) => {
+        let button;
 
-    if(e.target.tagName === 'IMG') {
-        button = e.target.closest('button');
-    } else if (e.target.tagName === 'BUTTON') {
-        button = e.target;
-    }
-
-    if (button) {
-        const buttons = e.currentTarget.querySelectorAll('button');
-        buttons.forEach((btn) => btn.classList.remove('btn-selected'));
-        button.classList.add('btn-selected');
-
-        // Change exterior images
-        if (e.currentTarget === exteriorColorSection) {
-            const color = button.querySelector('img').alt;
-            exteriorImage.src = exteriorImages[color];
+        if(e.target.tagName === 'IMG') {
+            button = e.target.closest('button');
+        } else if (e.target.tagName === 'BUTTON') {
+            button = e.target;
         }
 
-        // Change interior images
-        if (e.currentTarget === interiorColorSection) {
-            const color = button.querySelector('img').alt;
-            interiorImage.src = interiorImages[color];
+        if (button) {
+            const buttons = e.currentTarget.querySelectorAll('button');
+            buttons.forEach((btn) => btn.classList.remove('btn-selected'));
+            button.classList.add('btn-selected');
+
+            // Change exterior images
+            if (e.currentTarget === exteriorColorSection) {
+                selectedColor = button.querySelector('img').alt;
+                updateExteriorImage();
+            }
+
+            // Change interior images
+            if (e.currentTarget === interiorColorSection) {
+                const color = button.querySelector('img').alt;
+                interiorImage.src = interiorImages[color];
+            }
         }
+    };
+
+// Update Exterior Image based on color  and wheels
+    const updateExteriorImage = () => {
+        const performanceSuffix = selectedOptions['Performance Wheels'] ? '-performance' : '';
+        const colorKey = selectedColor in exteriorImages ? selectedColor : 'Stealth Grey';
+        exteriorImage.src = exteriorImages[colorKey].replace('.jpg' , `${performanceSuffix}.jpg`);
     }
-}
+
+// Wheel Selection
+    const handleWheelButtonClick = (e) => {
+        if (e.target.tagName === 'BUTTON') {
+            const buttons = document.querySelectorAll('#wheel-buttons button');
+            buttons.forEach((btn) => btn.classList.remove('bg-gray-700', 'text-white'));
+        }
+
+        // Add selected styles to click the button
+        e.target.classList.add('bg-gray-700', 'text-white');
+
+        selectedOptions['Performance Wheels'] = e.target.textContent.includes('Performance');
+
+        updateExteriorImage();
+        updateTotalPrice();
+    }
+
+// Performance Package Selection
+    const handlePerformanceButtonClick = () => {
+        const isSelected = performanceBtn.classList.toggle('bg-gray-700');
+        performanceBtn.classList.toggle('text-white');
+
+        // Update selected options
+        selectedOptions['Performance Package'] = isSelected;
+
+        updateTotalPrice();
+    }
+
+// Full Self Driving Selection
+    const fullSelfDrivingChange = () => {
+        const isSelected = fullSelfDrivingCheckbox.checked;
+        selectedOptions['Full Self-Driving'] = isSelected;
+
+        updateTotalPrice();
+    }
+
+// Handle Accessory Checkboxes Listeners
+    accessoryCheckboxes.forEach((checkbox) => {
+        checkbox.addEventListener('change', () => updateTotalPrice());
+    });
 
 // Event Listeners
 window.addEventListener('scroll', () => requestAnimationFrame(handleScroll));
 exteriorColorSection.addEventListener('click', handleColorButtonClick);
 interiorColorSection.addEventListener('click', handleColorButtonClick);
+wheelButtonSelection.addEventListener('click', handleWheelButtonClick);
+performanceBtn.addEventListener('click', handlePerformanceButtonClick);
+fullSelfDrivingCheckbox.addEventListener('change', fullSelfDrivingChange);
